@@ -3,7 +3,10 @@ package com.cfl.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cfl.shortlink.admin.dao.entity.UserDO;
+import com.cfl.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.cfl.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.cfl.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.cfl.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.cfl.shortlink.admin.dto.resp.UserRespDTO;
 
 /**
@@ -29,4 +32,32 @@ public interface UserService extends IService<UserDO> {
      * @param requestParam
      */
     void register(UserRegisterReqDTO requestParam);
+
+    /**
+     * 根据用户名修改用户
+     * @param requestParam
+     */
+    void update(UserUpdateReqDTO requestParam);
+
+    /**
+     * 根据用户名与密码登录
+     * @param requestParam
+     * @return 登录token
+     */
+    UserLoginRespDTO login(UserLoginReqDTO requestParam);
+
+    /**
+     * 检查用户是否登录
+     * @param username 用户名
+     * @param token 用户token
+     * @return ture 登录 否则未登录
+     */
+    Boolean checkLogin(String username, String token);
+
+    /**
+     * 用户推出登录
+     * @param username 用户名
+     * @param token 用户token
+     */
+    void logout(String username, String token);
 }
