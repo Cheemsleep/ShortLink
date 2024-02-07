@@ -2,11 +2,13 @@ package com.cfl.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cfl.shortlink.admin.common.biz.user.UserContext;
 import com.cfl.shortlink.admin.dao.entity.GroupDO;
 import com.cfl.shortlink.admin.dao.mapper.GroupMapper;
+import com.cfl.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.cfl.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.cfl.shortlink.admin.service.GroupService;
 import com.cfl.shortlink.admin.util.RandomGenerator;
@@ -53,10 +55,20 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         return BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
     }
 
+    @Override
+    public void updateGroup(ShortLinkGroupUpdateReqDTO requestParam) {
+        LambdaUpdateWrapper updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
+                .eq(GroupDO::getGid, requestParam.getGid())
+                .eq(GroupDO::getUsername, UserContext.getUsername())
+                .eq(GroupDO::getDelFlag, 0);
+        GroupDO groupDO = new GroupDO();
+        groupDO.setName(requestParam.getName());
+        baseMapper.update(groupDO, updateWrapper);
+    }
+
     public boolean hasGid(String gid) {
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getGid, gid)
-                //TODO 设置用户名
                 .eq(GroupDO::getUsername, UserContext.getUsername());
 
         GroupDO data = baseMapper.selectOne(queryWrapper);
