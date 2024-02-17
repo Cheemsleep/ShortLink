@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cfl.shortlink.admin.common.biz.user.UserContext;
 import com.cfl.shortlink.admin.dao.entity.GroupDO;
 import com.cfl.shortlink.admin.dao.mapper.GroupMapper;
+import com.cfl.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.cfl.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.cfl.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.cfl.shortlink.admin.service.GroupService;
@@ -26,7 +27,7 @@ import java.util.List;
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
 
     @Override
-    public void saveGroup(String groupName) {
+    public void saveGroup(String name) {
 
         String gid;
         do {
@@ -36,7 +37,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         GroupDO groupDO = GroupDO.builder()
                         .gid(gid)
                         .username(UserContext.getUsername())
-                        .name(groupName)
+                        .name(name)
                         .sortOrder(0)
                         .build();
 
@@ -75,6 +76,20 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         GroupDO groupDO = new GroupDO();
         groupDO.setDelFlag(1);
         baseMapper.update(groupDO, updateWrapper);
+    }
+
+    @Override
+    public void sortGroup(List<ShortLinkGroupSortReqDTO> requestParam) {
+        requestParam.forEach(each -> {
+            GroupDO groupDO = GroupDO.builder()
+                    .sortOrder(each.getSortOrder())
+                    .build();
+            LambdaUpdateWrapper updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
+                    .eq(GroupDO::getGid, each.getGid())
+                    .eq(GroupDO::getUsername, UserContext.getUsername())
+                    .eq(GroupDO::getDelFlag, 0);
+            baseMapper.update(groupDO, updateWrapper);
+        });
     }
 
     public boolean hasGid(String gid) {

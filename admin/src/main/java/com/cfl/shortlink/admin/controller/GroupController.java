@@ -4,6 +4,7 @@ package com.cfl.shortlink.admin.controller;
 import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.common.convention.result.Results;
 import com.cfl.shortlink.admin.dto.req.ShortLinkGroupSaveReqDTO;
+import com.cfl.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.cfl.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.cfl.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.cfl.shortlink.admin.service.GroupService;
@@ -56,6 +57,15 @@ public class GroupController {
     @DeleteMapping("/api/short-link/v1/group")
     public Result<Void> deleteGroup(@RequestParam String gid) {
         groupService.deleteGroup(gid);
+        return Results.success();
+    }
+
+    /**
+     * 重新排序
+     */
+    @PostMapping("/api/short-link/v1/group/sort")
+    public Result<Void> sortGroup(@RequestBody List<ShortLinkGroupSortReqDTO> requestParam) {
+        groupService.sortGroup(requestParam);
         return Results.success();
     }
 
