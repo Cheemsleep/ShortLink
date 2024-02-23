@@ -42,7 +42,7 @@ public class UserTransmitFilter implements Filter {
         if (!IGNORE_URI.contains(requestURI)) {
             String username = httpServletRequest.getHeader("username");
             String token = httpServletRequest.getHeader("token");
-            if (!StrUtil.isAllBlank(username, token)) {
+            if (StrUtil.isAllBlank(username, token)) {
                 returnJson((HttpServletResponse) servletResponse, JSON.toJSONString(Results.failure(new ClientException(UserErrorCodeEnum.USER_TOKEN_FAIL))));
                 return;
             }
