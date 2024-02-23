@@ -19,6 +19,7 @@ public class LinkTableShardingTest {
             "    create_time     datetime                    null comment '创建时间',\n" +
             "    update_time     datetime                    null comment '修改时间',\n" +
             "    del_flag        tinyint(1)                  null comment '删除标识 0：未删除 1：已删除',\n" +
+            "    favicon         varchar(256)                null comment '网站图标',\n" +
             "    constraint idx_unique_full_short_url\n" +
             "        unique (full_short_url)\n" +
             ")\n" +

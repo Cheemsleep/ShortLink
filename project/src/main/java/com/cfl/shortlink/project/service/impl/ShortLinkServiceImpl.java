@@ -3,6 +3,7 @@ package com.cfl.shortlink.project.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.StrBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cfl.shortlink.project.common.convention.exception.ServiceException;
@@ -10,7 +11,9 @@ import com.cfl.shortlink.project.config.RBloomFilterConfiguration;
 import com.cfl.shortlink.project.dao.entity.ShortLinkDO;
 import com.cfl.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLInkCreateRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.project.service.ShortLinkService;
 import com.cfl.shortlink.project.toolkit.HashUtil;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +72,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .originUrl(requestParam.getOriginUrl())
                 .gid(requestParam.getGid())
                 .build();
+    }
+
+    @Override
+    public IPage<ShortLInkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
+        LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+                .eq(ShortLinkDO::getGid, requestParam.getGid())
+                .eq(ShortLinkDO::getEnableStatus, 0)
+                .eq(ShortLinkDO::getDelFlag, 0);
+        IPage<ShortLinkDO> resultPage = baseMapper.selectPage(requestParam ,queryWrapper);
+        return resultPage.convert(each -> BeanUtil.toBean(each, ShortLInkPageRespDTO.class));
     }
 
     private String generateSuffix(ShortLInkCreateReqDTO requestParam) {
