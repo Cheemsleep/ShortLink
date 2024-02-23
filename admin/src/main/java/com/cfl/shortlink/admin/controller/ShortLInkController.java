@@ -7,10 +7,10 @@ import com.cfl.shortlink.admin.remote.ShortLinkRemoteService;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLInkCreateReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkPageRespDTO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.cfl.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 后管系统远程调用controller层
