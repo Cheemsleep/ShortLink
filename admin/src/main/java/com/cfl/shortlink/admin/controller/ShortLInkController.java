@@ -5,6 +5,7 @@ import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.common.convention.result.Results;
 import com.cfl.shortlink.admin.remote.ShortLinkRemoteService;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLInkCreateReqDTO;
+import com.cfl.shortlink.admin.remote.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
@@ -35,6 +36,15 @@ public class ShortLInkController {
     @GetMapping("/api/short-link/admin/v1/page")
     public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         return shortLinkRemoteService.pageShortLink(requestParam);
+    }
+
+    /**
+     * 短链接修改功能
+     */
+    @PutMapping("/api/short-link/admin/v1/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLInkUpdateReqDTO requestParam) {
+        shortLinkRemoteService.updateShortLink(requestParam);
+        return Results.success();
     }
 
 }

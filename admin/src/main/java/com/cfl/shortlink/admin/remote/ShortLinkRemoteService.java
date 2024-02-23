@@ -7,6 +7,7 @@ import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLInkCreateReqDTO;
+import com.cfl.shortlink.admin.remote.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkCreateRespDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkPageRespDTO;
@@ -60,4 +61,11 @@ public interface ShortLinkRemoteService {
         });
     }
 
+    /**
+     * 修改短链接
+     * @param requestParam
+     */
+    default void updateShortLink(ShortLInkUpdateReqDTO requestParam) {
+        String resultBodyStr = HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/update", JSON.toJSONString(requestParam));
+    }
 }
