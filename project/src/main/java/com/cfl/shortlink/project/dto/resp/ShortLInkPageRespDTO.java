@@ -54,6 +54,11 @@ public class ShortLInkPageRespDTO {
     private Date validDate;
 
     /**
+     * 创建时间
+     */
+    private Date createDate;
+
+    /**
      * 描述
      */
     private String describe;
