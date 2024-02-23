@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
 import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
@@ -36,6 +37,15 @@ public class ShortLinkController {
     @GetMapping("/api/short-link/v1/page")
     public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         return Results.success(shortLinkService.pageShortLink(requestParam));
+    }
+
+    /**
+     *
+     */
+    @PutMapping("/api/short-link/v1/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLInkUpdateReqDTO requestParam) {
+        shortLinkService.updateShortLink(requestParam);
+        return Results.success();
     }
 
     /**
