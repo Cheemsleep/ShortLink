@@ -13,8 +13,8 @@ public enum ValidDateTypeEnum {
      * 永久有效期
      * 自定义
      */
-    PERMANENT(1),
-    CUSTOM(0);
+    PERMANENT(0),
+    CUSTOM(1);
 
     @Getter
     private final int type;
