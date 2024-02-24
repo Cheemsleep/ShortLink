@@ -25,6 +25,7 @@ import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.cfl.shortlink.project.service.ShortLinkService;
 import com.cfl.shortlink.project.toolkit.HashUtil;
+import com.cfl.shortlink.project.toolkit.LinkUtil;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;
@@ -97,6 +98,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
 
         }
+        //缓存预热
+        stringRedisTemplate.opsForValue()
+                .set(
+                        fullShortUrl, requestParam.getOriginUrl(),
+                        LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()),
+                        TimeUnit.MILLISECONDS
+                    );
+
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLInkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
