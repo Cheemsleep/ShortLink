@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 短链接接口实现层
@@ -186,10 +187,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             ((HttpServletResponse)response).sendRedirect(originalLink);
             return;
         }
+        boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
+
+        if (!contains) return;
+
+        String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
+        if (StrUtil.isNotBlank(gotoIsNullShortLink)) return;
+
+
         RLock rLock = redissonClient.getLock(String.format(RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
         rLock.lock();
         try {
-            //再次获取redis缓存中的链接，防止重复查询数据库
+            //再次获取redis缓存中的链接，防止重复查询数据库 分布式锁二次查询
             originalLink = stringRedisTemplate.opsForValue().get(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl));
             if (StrUtil.isNotBlank(originalLink)) {
                 //已查询到redis中含有链接 不需要再查数据库
@@ -200,7 +209,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
             if (shortLinkGotoDO == null) {
-                // TODO 此处需进行风控
+                stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
                 return;
             }
 
@@ -212,6 +221,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
             ShortLinkDO shortLinkDO = baseMapper.selectOne(linkDOQueryWrapper);
             if (shortLinkDO != null) {
+                stringRedisTemplate.opsForValue().set(String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkDO.getOriginUrl(), 30, TimeUnit.MINUTES);
                 ((HttpServletResponse)response).sendRedirect(shortLinkDO.getOriginUrl());
             }
         } finally {
