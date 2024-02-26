@@ -6,6 +6,7 @@ import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
 import com.cfl.shortlink.project.dto.req.RecycleBinSaveReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class RecycleBinController {
      * 分页查询回收站短链接
      */
     @GetMapping("/api/short-link/v1/recycle-bin/page")
-    public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         return Results.success(recycleBinService.pageShortLink(requestParam));
     }
 }
