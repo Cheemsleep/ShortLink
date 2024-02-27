@@ -13,6 +13,7 @@ import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.dao.entity.GroupDO;
 import com.cfl.shortlink.admin.dao.mapper.GroupMapper;
 import com.cfl.shortlink.admin.remote.ShortLinkRemoteService;
+import com.cfl.shortlink.admin.remote.dto.req.RecycleBinRecoverReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.RecycleBinSaveReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
@@ -21,9 +22,7 @@ import com.cfl.shortlink.admin.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -53,5 +52,10 @@ public class RecycleBinServiceImpl implements RecycleBinService {
         }
         requestParam.setGidList(groupDOList.stream().map(GroupDO::getGid).toList());
         return shortLinkRemoteService.pageRecycleBinShortLink(requestParam);
+    }
+
+    @Override
+    public Result<Void> recoverRecycleBin(RecycleBinRecoverReqDTO requestParam) {
+        return shortLinkRemoteService.recoverRecycleBin(requestParam);
     }
 }

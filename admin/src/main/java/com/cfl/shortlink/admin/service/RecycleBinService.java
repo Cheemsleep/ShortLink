@@ -2,8 +2,8 @@ package com.cfl.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.admin.common.convention.result.Result;
+import com.cfl.shortlink.admin.remote.dto.req.RecycleBinRecoverReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.RecycleBinSaveReqDTO;
-import com.cfl.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkPageRespDTO;
 
@@ -24,4 +24,10 @@ public interface RecycleBinService {
      * @param requestParam
      */
     Result<IPage<ShortLInkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
+
+    /**
+     * 从回收站恢复短链接
+     * @param requestParam
+     */
+    Result<Void> recoverRecycleBin(RecycleBinRecoverReqDTO requestParam);
 }
