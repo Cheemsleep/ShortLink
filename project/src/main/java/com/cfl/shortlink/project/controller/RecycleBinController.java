@@ -4,10 +4,7 @@ package com.cfl.shortlink.project.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
-import com.cfl.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
-import com.cfl.shortlink.project.dto.req.RecycleBinSaveReqDTO;
-import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
-import com.cfl.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.cfl.shortlink.project.dto.req.*;
 import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +44,15 @@ public class RecycleBinController {
     @PostMapping("/api/short-link/v1/recycle-bin/recover")
     public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam) {
         recycleBinService.recoverRecycleBin(requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 从回收站删除短链接
+     */
+    @PostMapping("/api/short-link/v1/recycle-bin/remove")
+    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam) {
+        recycleBinService.removeRecycleBin(requestParam);
         return Results.success();
     }
 }

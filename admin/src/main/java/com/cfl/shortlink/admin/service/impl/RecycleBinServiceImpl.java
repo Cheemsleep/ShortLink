@@ -1,9 +1,6 @@
 package com.cfl.shortlink.admin.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -13,10 +10,7 @@ import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.dao.entity.GroupDO;
 import com.cfl.shortlink.admin.dao.mapper.GroupMapper;
 import com.cfl.shortlink.admin.remote.ShortLinkRemoteService;
-import com.cfl.shortlink.admin.remote.dto.req.RecycleBinRecoverReqDTO;
-import com.cfl.shortlink.admin.remote.dto.req.RecycleBinSaveReqDTO;
-import com.cfl.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
-import com.cfl.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.cfl.shortlink.admin.remote.dto.req.*;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkPageRespDTO;
 import com.cfl.shortlink.admin.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +51,10 @@ public class RecycleBinServiceImpl implements RecycleBinService {
     @Override
     public Result<Void> recoverRecycleBin(RecycleBinRecoverReqDTO requestParam) {
         return shortLinkRemoteService.recoverRecycleBin(requestParam);
+    }
+
+    @Override
+    public Result<Void> removeRecycleBin(RecycleBinRemoveReqDTO requestParam) {
+        return shortLinkRemoteService.removeRecycleBin(requestParam);
     }
 }
