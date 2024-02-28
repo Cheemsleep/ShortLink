@@ -7,6 +7,9 @@ import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -14,13 +17,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cfl.shortlink.project.common.constant.RedisKeyConstant;
+import com.cfl.shortlink.project.common.constant.ShortLinkConstant;
 import com.cfl.shortlink.project.common.convention.exception.ClientException;
 import com.cfl.shortlink.project.common.convention.exception.ServiceException;
 import com.cfl.shortlink.project.common.enums.ValidDateTypeEnum;
 import com.cfl.shortlink.project.dao.entity.LinkAccessStatsDO;
+import com.cfl.shortlink.project.dao.entity.LinkLocateStatsDO;
 import com.cfl.shortlink.project.dao.entity.ShortLinkDO;
 import com.cfl.shortlink.project.dao.entity.ShortLinkGotoDO;
 import com.cfl.shortlink.project.dao.mapper.LinkAccessStatsMapper;
+import com.cfl.shortlink.project.dao.mapper.LinkLocateStatsMapper;
 import com.cfl.shortlink.project.dao.mapper.ShortLinkGotoMapper;
 import com.cfl.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
@@ -46,12 +52,12 @@ import org.jsoup.nodes.Element;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -71,6 +77,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
     private final LinkAccessStatsMapper linkAccessStatsMapper;
+    private final LinkLocateStatsMapper linkLocateStatsMapper;
+
+    @Value("${short-link.status.locate.amap-key}")
+    private String statusLocateAmapKey;
 
     @Override
     public ShortLInkCreateRespDTO createShortLink(ShortLInkCreateReqDTO requestParam) {
@@ -358,6 +368,29 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .gid(gid)
                     .build();
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+            Map<String, Object> locateParamMap = new HashMap<>();
+            locateParamMap.put("key", statusLocateAmapKey);
+            locateParamMap.put("ip", remoteAddr);
+            String locateResultStr = HttpUtil.get(ShortLinkConstant.AMAP_REMOTE_URL, locateParamMap);
+            JSONObject locateResultObj = JSON.parseObject(locateResultStr);
+            String infoCode = locateResultObj.getString("infocode");
+            LinkLocateStatsDO linkLocateStatsDO;
+            if (StrUtil.isNotBlank(infoCode) && StrUtil.equals(infoCode, "10000")) {
+                String province = locateResultObj.getString("province");
+                boolean unKnownFlag = StrUtil.equals(province, "[]");
+                linkLocateStatsDO = LinkLocateStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(now)
+                        .cnt(1)
+                        .province(unKnownFlag ? "未知" : province)
+                        .city(unKnownFlag ? "未知" : locateResultObj.getString("city"))
+                        .adcode(unKnownFlag ? "未知" : locateResultObj.getString("adcode"))
+                        .country("中国")
+                        .build();
+                linkLocateStatsMapper.shortLinkLocateState(linkLocateStatsDO);
+            }
+
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);
         }
