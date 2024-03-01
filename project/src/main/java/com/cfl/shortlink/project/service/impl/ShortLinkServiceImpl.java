@@ -76,6 +76,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkOsStatsMapper linkOsStatsMapper;
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
     private final LinkAccessLogsMapper linkAccessLogsMapper;
+    private final LinkDeviceStatsMapper linkDeviceStatsMapper;
 
     @Value("${short-link.status.locate.amap-key}")
     private String statusLocateAmapKey;
@@ -416,6 +417,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .user(uv.get())
                         .build();
                 linkAccessLogsMapper.insert(linkAccessLogsDO);
+                String device = LinkUtil.getDevice((HttpServletRequest) request);
+                LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(now)
+                        .cnt(1)
+                        .device(device)
+                        .build();
+                linkDeviceStatsMapper.shortLinkDeviceState(linkDeviceStatsDO);
             }
 
         } catch (Throwable ex) {
