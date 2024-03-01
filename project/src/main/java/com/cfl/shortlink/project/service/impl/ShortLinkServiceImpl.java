@@ -21,14 +21,8 @@ import com.cfl.shortlink.project.common.constant.ShortLinkConstant;
 import com.cfl.shortlink.project.common.convention.exception.ClientException;
 import com.cfl.shortlink.project.common.convention.exception.ServiceException;
 import com.cfl.shortlink.project.common.enums.ValidDateTypeEnum;
-import com.cfl.shortlink.project.dao.entity.LinkAccessStatsDO;
-import com.cfl.shortlink.project.dao.entity.LinkLocateStatsDO;
-import com.cfl.shortlink.project.dao.entity.ShortLinkDO;
-import com.cfl.shortlink.project.dao.entity.ShortLinkGotoDO;
-import com.cfl.shortlink.project.dao.mapper.LinkAccessStatsMapper;
-import com.cfl.shortlink.project.dao.mapper.LinkLocateStatsMapper;
-import com.cfl.shortlink.project.dao.mapper.ShortLinkGotoMapper;
-import com.cfl.shortlink.project.dao.mapper.ShortLinkMapper;
+import com.cfl.shortlink.project.dao.entity.*;
+import com.cfl.shortlink.project.dao.mapper.*;
 import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
@@ -78,6 +72,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final RedissonClient redissonClient;
     private final LinkAccessStatsMapper linkAccessStatsMapper;
     private final LinkLocateStatsMapper linkLocateStatsMapper;
+    private final LinkOsStatsMapper linkOsStatsMapper;
 
     @Value("${short-link.status.locate.amap-key}")
     private String statusLocateAmapKey;
@@ -389,6 +384,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .country("中国")
                         .build();
                 linkLocateStatsMapper.shortLinkLocateState(linkLocateStatsDO);
+                LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(now)
+                        .cnt(1)
+                        .os(LinkUtil.getOs((HttpServletRequest) request))
+                        .build();
+                linkOsStatsMapper.shortLinkOsState(linkOsStatsDO);
             }
 
         } catch (Throwable ex) {
