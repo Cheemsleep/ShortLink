@@ -17,16 +17,18 @@ public class UserTableShardingTest {
             "                                      UNIQUE KEY `idx_unique_full-short-url` (`full_short_url`) USING BTREE\n" +
             ") ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;";
 
-    public static final String SQL1 = "alter table t_link_stats_today_%d\n" +
-            "    drop key `idx_unique_full-short-url`;\n" +
+    public static final String SQL1 = "alter table t_link_%d\n" +
+            "    change today_pv total_pv int null comment '历史PV';\n" +
             "\n" +
-            "alter table t_link_stats_today_%d\n" +
-            "    add constraint `idx_unique_full-short-url`\n" +
-            "        unique (full_short_url, gid, date);";
+            "alter table t_link_%d\n" +
+            "    change today_uv total_uv int null comment '历史UV';\n" +
+            "\n" +
+            "alter table t_link_%d\n" +
+            "    change today_uip total_uip int null comment '历史UIP';";
 
     public static void main(String[] args) {
         for (int i = 1; i < 16; i++) {
-            System.out.printf((SQL1) + "%n", i, i);
+            System.out.printf((SQL1) + "%n", i, i, i);
         }
     }
 }
