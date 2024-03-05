@@ -7,14 +7,11 @@ import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLInkCreateRespDTO;
-import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -34,7 +31,7 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * @param requestParam
      * @return 短链接分页返回结果
      */
-    IPage<ShortLInkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam);
+    IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam);
 
     /**
      * 查询短链接分组内数量
