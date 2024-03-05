@@ -7,7 +7,7 @@ import com.cfl.shortlink.project.common.convention.result.Results;
 import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
-import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.cfl.shortlink.project.service.ShortLinkService;
 import jakarta.servlet.ServletRequest;
@@ -46,7 +46,7 @@ public class ShortLinkController {
      * 分页查询短链接
      */
     @GetMapping("/api/short-link/v1/page")
-    public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         return Results.success(shortLinkService.pageShortLink(requestParam));
     }
 

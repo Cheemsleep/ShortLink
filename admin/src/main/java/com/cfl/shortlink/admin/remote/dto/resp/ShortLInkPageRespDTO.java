@@ -98,6 +98,6 @@ public class ShortLInkPageRespDTO {
     /**
      * 今日Uip
      */
-    private Integer todayUIp;
+    private Integer todayUip;
 
 }

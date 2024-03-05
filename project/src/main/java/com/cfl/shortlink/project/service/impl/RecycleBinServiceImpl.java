@@ -11,7 +11,7 @@ import com.cfl.shortlink.project.common.constant.RedisKeyConstant;
 import com.cfl.shortlink.project.dao.entity.ShortLinkDO;
 import com.cfl.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.cfl.shortlink.project.dto.req.*;
-import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.cfl.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -43,7 +43,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
     }
 
     @Override
-    public IPage<ShortLInkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 .in(ShortLinkDO::getGid, requestParam.getGidList())
                 .eq(ShortLinkDO::getEnableStatus, 1)
@@ -51,7 +51,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
                 .orderByDesc(ShortLinkDO::getCreateTime);
         IPage<ShortLinkDO> resultPage = baseMapper.selectPage(requestParam ,queryWrapper);
         return resultPage.convert(each -> {
-            ShortLInkPageRespDTO result = BeanUtil.toBean(each, ShortLInkPageRespDTO.class);
+            ShortLinkPageRespDTO result = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
             result.setDomain("http://" + result.getDomain());
             return result;
         });

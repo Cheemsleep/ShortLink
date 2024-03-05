@@ -1,7 +1,6 @@
 package com.cfl.shortlink.project.dto.resp;
 
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -11,7 +10,7 @@ import java.util.Date;
  * 短链接分页响应体对象
  */
 @Data
-public class ShortLInkPageRespDTO {
+public class ShortLinkPageRespDTO {
 
     /**
      * id
@@ -94,10 +93,10 @@ public class ShortLInkPageRespDTO {
     /**
      * 历史Uip
      */
-    private Integer totalUIp;
+    private Integer totalUip;
 
     /**
      * 今日Uip
      */
-    private Integer todayUIp;
+    private Integer todayUip;
 }

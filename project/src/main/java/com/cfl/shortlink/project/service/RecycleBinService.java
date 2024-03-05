@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cfl.shortlink.project.dao.entity.ShortLinkDO;
 import com.cfl.shortlink.project.dto.req.*;
-import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 
 /**
  * 回收站服务接口层
@@ -21,7 +21,7 @@ public interface RecycleBinService extends IService<ShortLinkDO> {
      * @param requestParam
      * @return 短链接分页返回结果
      */
-    IPage<ShortLInkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
+    IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam);
 
     /**
      * 从回收站恢复短链接

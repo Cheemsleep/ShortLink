@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
 import com.cfl.shortlink.project.dto.req.*;
-import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.cfl.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +34,7 @@ public class RecycleBinController {
      * 分页查询回收站短链接
      */
     @GetMapping("/api/short-link/v1/recycle-bin/page")
-    public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         return Results.success(recycleBinService.pageShortLink(requestParam));
     }
 
