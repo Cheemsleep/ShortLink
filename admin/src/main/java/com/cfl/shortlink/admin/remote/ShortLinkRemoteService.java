@@ -5,14 +5,12 @@ import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.common.convention.result.Results;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkStatsReqDTO;
-import com.cfl.shortlink.admin.remote.dto.resp.ShortLinkStatsRespDTO;
+import com.cfl.shortlink.admin.remote.dto.resp.*;
 import com.cfl.shortlink.admin.remote.dto.req.*;
-import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkCreateRespDTO;
-import com.cfl.shortlink.admin.remote.dto.resp.ShortLInkPageRespDTO;
-import com.cfl.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -146,5 +144,23 @@ public interface ShortLinkRemoteService {
         requestMap.put("endDate", requestParam.getEndDate());
         String resultBodyStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/stats", requestMap);
         return JSON.parseObject(resultBodyStr, Result.class);
+    }
+
+    /**
+     * 访问单个短链接指定时间内访问记录监控数据
+     * @param requestParam
+     * @return 短链接监控记录信息
+     */
+    default Result<IPage<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
+        Map<String, Object> requestMap = new HashMap<>();
+        requestMap.put("fullShortUrl", requestParam.getFullShortUrl());
+        requestMap.put("gid", requestParam.getGid());
+        requestMap.put("startDate", requestParam.getStartDate());
+        requestMap.put("endDate", requestParam.getEndDate());
+        requestMap.put("current", requestParam.getCurrent());
+        requestMap.put("size", requestParam.getSize());
+        String resultBodyStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/access-record", requestMap);
+        return JSON.parseObject(resultBodyStr, new TypeReference<>() {
+        });
     }
 }
