@@ -1,5 +1,6 @@
 package com.cfl.shortlink.project.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.cfl.shortlink.project.common.database.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import java.util.Date;
 /**
  * 短链接统计设备访问实体类
  */
+@TableName("t_link_device_stats")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

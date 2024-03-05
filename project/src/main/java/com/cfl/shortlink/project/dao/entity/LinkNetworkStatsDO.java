@@ -1,5 +1,6 @@
 package com.cfl.shortlink.project.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.util.Date;
 /**
  * 短链接统计访问网络实体类
  */
+@TableName("t_link_network_stats")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
