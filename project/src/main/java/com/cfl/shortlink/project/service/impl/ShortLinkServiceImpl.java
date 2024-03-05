@@ -27,7 +27,7 @@ import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLInkCreateRespDTO;
-import com.cfl.shortlink.project.dto.resp.ShortLInkPageRespDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.cfl.shortlink.project.service.ShortLinkService;
 import com.cfl.shortlink.project.toolkit.HashUtil;
@@ -98,6 +98,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .createdType(requestParam.getCreatedType())
                 .validDateType(requestParam.getValidDateType())
                 .validDate(requestParam.getValidDate())
+                .todayPv(0)
+                .todayUv(0)
+                .todayUip(0)
                 .enableStatus(0)
                 .favicon(getFavicon(requestParam.getOriginUrl()))
                 .describe(requestParam.getDescribe())
@@ -140,14 +143,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     }
 
     @Override
-    public IPage<ShortLInkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 .eq(ShortLinkDO::getGid, requestParam.getGid())
                 .eq(ShortLinkDO::getEnableStatus, 0)
                 .eq(ShortLinkDO::getDelFlag, 0);
         IPage<ShortLinkDO> resultPage = baseMapper.selectPage(requestParam ,queryWrapper);
         return resultPage.convert(each -> {
-            ShortLInkPageRespDTO result = BeanUtil.toBean(each, ShortLInkPageRespDTO.class);
+            ShortLinkPageRespDTO result = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
             result.setDomain("http://" + result.getDomain());
             return result;
         });
@@ -442,6 +445,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .user(uv.get())
                         .build();
                 linkAccessLogsMapper.insert(linkAccessLogsDO);
+
+                baseMapper.incrementStats(gid, fullShortUrl, 1, uvFirstFlag.get() ? 1 : 0, uipFirstFlag ? 1 : 0);
             }
 
         } catch (Throwable ex) {
