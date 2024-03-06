@@ -1,6 +1,7 @@
 package com.cfl.shortlink.project.dao.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.cfl.shortlink.project.common.database.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LinkNetworkStatsDO {
+public class LinkNetworkStatsDO extends BaseDO {
     /**
      * id
      */
@@ -47,4 +48,6 @@ public class LinkNetworkStatsDO {
      * 访问网络
      */
     private String network;
+
+
 }

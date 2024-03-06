@@ -9,7 +9,7 @@ import java.util.Date;
  * 短链接修改请求体对象
  */
 @Data
-public class ShortLInkUpdateReqDTO {
+public class ShortLinkUpdateReqDTO {
 
     /**
      * 原始链接
@@ -20,6 +20,11 @@ public class ShortLInkUpdateReqDTO {
      * 完整短链接
      */
     private String fullShortUrl;
+
+    /**
+     * 原始分组标识
+     */
+    private String originGid;
 
     /**
      * 分组标识
