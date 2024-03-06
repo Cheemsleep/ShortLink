@@ -1,4 +1,4 @@
-package com.cfl.shortlink.project.dto.req;
+package com.cfl.shortlink.admin.remote.dto.req;
 
 
 import lombok.AllArgsConstructor;
