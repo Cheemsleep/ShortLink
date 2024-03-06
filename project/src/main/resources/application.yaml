@@ -27,6 +27,8 @@ mybatis-plus:
 
 
 short-link:
+  domain:
+    default: nurl.ink:8001
   status:
     locate:
       amap-key: 6cd467e8c70a000d48bc9092e5db5f7b
