@@ -1,4 +1,4 @@
-package com.cfl.shortlink.project.dto.resp;
+package com.cfl.shortlink.admin.remote.dto.resp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShortLInkCreateRespDTO {
+public class ShortLinkCreateRespDTO {
     /**
      * 分组标识
      */

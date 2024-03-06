@@ -4,9 +4,11 @@ package com.cfl.shortlink.project.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
-import com.cfl.shortlink.project.dto.req.ShortLInkCreateReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.cfl.shortlink.project.service.ShortLinkService;
@@ -38,8 +40,16 @@ public class ShortLinkController {
      * 创建短链接
      */
     @PostMapping("/api/short-link/v1/create")
-    public Result createShortLink(@RequestBody ShortLInkCreateReqDTO requestParam) {
+    public Result createShortLink(@RequestBody ShortLinkCreateReqDTO requestParam) {
         return Results.success(shortLinkService.createShortLink(requestParam));
+    }
+
+    /**
+     * 批量创建短链接
+     */
+    @PostMapping("/api/short-link/v1/create/batch")
+    public Result<ShortLinkBatchCreateRespDTO> batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam) {
+        return Results.success(shortLinkService.batchCreateShortLink(requestParam));
     }
 
     /**

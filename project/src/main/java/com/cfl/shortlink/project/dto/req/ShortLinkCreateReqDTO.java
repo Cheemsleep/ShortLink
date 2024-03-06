@@ -1,4 +1,4 @@
-package com.cfl.shortlink.admin.remote.dto.req;
+package com.cfl.shortlink.project.dto.req;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -10,7 +10,7 @@ import java.util.Date;
  * 短链接创建请求体对象
  */
 @Data
-public class ShortLInkCreateReqDTO {
+public class ShortLinkCreateReqDTO {
     /**
      * 域名
      */

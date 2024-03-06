@@ -1,20 +1,24 @@
-package com.cfl.shortlink.admin.remote.dto.resp;
+package com.cfl.shortlink.project.dto.resp;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+/**
+ * 短链接基础信息响应参数
+ */
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class ShortLInkCreateRespDTO {
+@NoArgsConstructor
+public class ShortLinkBaseInfoRespDTO {
+
     /**
-     * 分组标识
+     * 描述信息
      */
-    private String gid;
+    private String describe;
 
     /**
      * 原始链接
@@ -25,4 +29,5 @@ public class ShortLInkCreateRespDTO {
      * 短链接
      */
     private String fullShortUrl;
+
 }

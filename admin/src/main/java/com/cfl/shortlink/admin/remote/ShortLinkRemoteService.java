@@ -9,6 +9,8 @@ import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkStatsReqDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.*;
 import com.cfl.shortlink.admin.remote.dto.req.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +26,20 @@ public interface ShortLinkRemoteService {
      * @param requestParam
      * @return
      */
-    default Result<ShortLInkCreateRespDTO> createShortLink(ShortLInkCreateReqDTO requestParam) {
+    default Result<ShortLinkCreateRespDTO> createShortLink(ShortLinkCreateReqDTO requestParam) {
         String resultBodyStr = HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/create", JSON.toJSONString(requestParam));
         return JSON.parseObject(resultBodyStr, new TypeReference<>() {
+        });
+    }
+
+    /**
+     * 批量创建短链接
+     * @param requestParam 批量创建短链接请求参数
+     * @return 短链接批量创建响应
+     */
+    default Result<ShortLinkBatchCreateRespDTO> batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam) {
+        String resultBody = HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/create/batch", JSON.toJSONString(requestParam));
+        return JSON.parseObject(resultBody, new TypeReference<>() {
         });
     }
 
