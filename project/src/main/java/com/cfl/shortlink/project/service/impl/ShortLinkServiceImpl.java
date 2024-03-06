@@ -256,11 +256,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .eq(ShortLinkDO::getDelTime, 0L)
                         .eq(ShortLinkDO::getDelFlag, 0)
                         .eq(ShortLinkDO::getEnableStatus, 0);
+                long timeMillis = System.currentTimeMillis();
                 ShortLinkDO delShortLinkDO = ShortLinkDO.builder()
-                        .delTime(System.currentTimeMillis())
+                        .delTime(timeMillis)
                         .build();
-                delShortLinkDO.setDelFlag(1);
                 baseMapper.update(delShortLinkDO, updateWrapper);
+                LambdaUpdateWrapper<ShortLinkDO> deleteWrapper = Wrappers.lambdaUpdate(ShortLinkDO.class)
+                        .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
+                        .eq(ShortLinkDO::getGid, hasShortLinkDO.getGid())
+                        .eq(ShortLinkDO::getDelTime, timeMillis)
+                        .eq(ShortLinkDO::getDelFlag, 0)
+                        .eq(ShortLinkDO::getEnableStatus, 0);
+                baseMapper.delete(deleteWrapper);
                 ShortLinkDO shortLinkDO = ShortLinkDO.builder()
                         .domain(createShortLinkDefaultDomain)
                         .originUrl(requestParam.getOriginUrl())

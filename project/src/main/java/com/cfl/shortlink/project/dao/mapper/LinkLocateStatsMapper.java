@@ -17,7 +17,7 @@ public interface LinkLocateStatsMapper extends BaseMapper<LinkLocateStatsDO> {
     /**
      * 记录地区访问监控数据
      */
-    @Insert("INSERT INTO t_link_locale_stats (full_short_url, gid, date, cnt, country, province, city, adcode, create_time, update_time, del_flag) " +
+    @Insert("INSERT INTO t_link_locate_stats (full_short_url, gid, date, cnt, country, province, city, adcode, create_time, update_time, del_flag) " +
             "VALUES( #{linkLocateStats.fullShortUrl}, #{linkLocateStats.gid}, #{linkLocateStats.date}, #{linkLocateStats.cnt}, #{linkLocateStats.country}, #{linkLocateStats.province}, #{linkLocateStats.city}, #{linkLocateStats.adcode}, NOW(), NOW(), 0) " +
             "ON DUPLICATE KEY UPDATE cnt = cnt +  #{linkLocateStats.cnt};")
     void shortLinkLocateState(@Param("linkLocateStats") LinkLocateStatsDO linkLocateStatsDO);
@@ -30,7 +30,7 @@ public interface LinkLocateStatsMapper extends BaseMapper<LinkLocateStatsDO> {
             "    province, " +
             "    SUM(cnt) AS cnt " +
             "FROM " +
-            "    t_link_locale_stats " +
+            "    t_link_locate_stats " +
             "WHERE " +
             "    full_short_url = #{param.fullShortUrl} " +
             "    AND gid = #{param.gid} " +
@@ -46,7 +46,7 @@ public interface LinkLocateStatsMapper extends BaseMapper<LinkLocateStatsDO> {
             "    province, " +
             "    SUM(cnt) AS cnt " +
             "FROM " +
-            "    t_link_locale_stats " +
+            "    t_link_locate_stats " +
             "WHERE " +
             "    gid = #{param.gid} " +
             "    AND date BETWEEN #{param.startDate} and #{param.endDate} " +
