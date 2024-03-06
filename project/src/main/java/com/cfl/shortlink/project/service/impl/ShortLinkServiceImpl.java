@@ -241,8 +241,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             ((HttpServletResponse)response).sendRedirect("/page/notfound");
             return;
         }
-
-
         RLock rLock = redissonClient.getLock(String.format(RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
         rLock.lock();
         try {
