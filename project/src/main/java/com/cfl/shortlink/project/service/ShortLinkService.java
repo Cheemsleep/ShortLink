@@ -3,8 +3,9 @@ package com.cfl.shortlink.project.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cfl.shortlink.project.dao.entity.ShortLinkDO;
+import com.cfl.shortlink.project.dto.bz.ShortLinkStatsRecordDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkCreateReqDTO;
-import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
@@ -54,7 +55,7 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * 修改短链接
      * @param requestParam
      */
-    void updateShortLink(ShortLInkUpdateReqDTO requestParam);
+    void updateShortLink(ShortLinkUpdateReqDTO requestParam);
 
     /**
      * 跳转短链接
@@ -64,4 +65,12 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      */
     void restoreUrl(String shortUri, ServletRequest request, ServletResponse response);
 
+
+    /**
+     * 短链接统计
+     * @param fullShortUrl         完整短链接
+     * @param gid                  分组标识
+     * @param shortLinkStatsRecord 短链接统计实体参数
+     */
+    void shortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO shortLinkStatsRecord);
 }

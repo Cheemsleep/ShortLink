@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
 import com.cfl.shortlink.project.dto.req.ShortLinkCreateReqDTO;
-import com.cfl.shortlink.project.dto.req.ShortLInkUpdateReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
@@ -64,7 +64,7 @@ public class ShortLinkController {
      * 短链接修改功能
      */
     @PostMapping("/api/short-link/v1/update")
-    public Result<Void> updateShortLink(@RequestBody ShortLInkUpdateReqDTO requestParam) {
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
         shortLinkService.updateShortLink(requestParam);
         return Results.success();
     }
