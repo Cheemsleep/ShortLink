@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.cfl.shortlink.project.common.convention.result.Result;
 import com.cfl.shortlink.project.common.convention.result.Results;
 import com.cfl.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
+import com.cfl.shortlink.project.dto.req.ShortLinkGroupStatsAccessRecordReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkStatsAccessRecordReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkStatsReqDTO;
+import com.cfl.shortlink.project.dto.resp.ShortLinkGroupStatsAccessRecordRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkStatsAccessRecordRespDTO;
 import com.cfl.shortlink.project.dto.resp.ShortLinkStatsRespDTO;
 import com.cfl.shortlink.project.service.ShortLinkStatsService;
@@ -44,5 +46,13 @@ public class ShortLinkStatsController {
     @GetMapping("/api/short-link/v1/access-record")
     public Result<IPage<ShortLinkStatsAccessRecordRespDTO>> shortLinkStats(ShortLinkStatsAccessRecordReqDTO requestParam) {
         return Results.success(shortLinkStatsService.shortLinkStatsAccessRecord(requestParam));
+    }
+
+    /**
+     * 访问分组下短链接指定时间内访问记录监控数据
+     */
+    @GetMapping("/api/short-link/v1/access-record/group")
+    public Result<IPage<ShortLinkGroupStatsAccessRecordRespDTO>> groupStats(ShortLinkGroupStatsAccessRecordReqDTO requestParam) {
+        return Results.success(shortLinkStatsService.shortLinkStatsAccessGroupRecord(requestParam));
     }
 }
