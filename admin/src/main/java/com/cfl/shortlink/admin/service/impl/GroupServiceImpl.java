@@ -1,6 +1,7 @@
 package com.cfl.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -91,13 +92,11 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     @Override
     public void deleteGroup(String gid) {
-        LambdaUpdateWrapper updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
-                .eq(GroupDO::getGid, gid)
+        LambdaUpdateWrapper<GroupDO> updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
                 .eq(GroupDO::getUsername, UserContext.getUsername())
+                .eq(GroupDO::getGid, gid)
                 .eq(GroupDO::getDelFlag, 0);
-        GroupDO groupDO = new GroupDO();
-        groupDO.setDelFlag(1);
-        baseMapper.update(groupDO, updateWrapper);
+        baseMapper.delete(updateWrapper);
     }
 
     @Override
