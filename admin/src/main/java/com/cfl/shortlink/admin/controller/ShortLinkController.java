@@ -21,7 +21,7 @@ import java.util.List;
  * 后管系统远程调用controller层
  */
 @RestController
-public class ShortLInkController {
+public class ShortLinkController {
 
     ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
     };
