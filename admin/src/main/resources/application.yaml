@@ -24,3 +24,7 @@ mybatis-plus:
 short-link:
   group:
     default-max-num: 20
+  flow-limit:
+    enable: true
+    time-window: 1
+    max-access-count: 2
