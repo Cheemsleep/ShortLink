@@ -25,10 +25,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class RecycleBinServiceImpl implements RecycleBinService {
-    private final GroupMapper groupMapper;
 
-    ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
-    };
+    private final GroupMapper groupMapper;
+    private final ShortLinkRemoteService shortLinkRemoteService;
 
     @Override
     public Result<Void> saveRecycleBin(RecycleBinSaveReqDTO requestParam) {

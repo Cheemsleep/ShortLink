@@ -38,7 +38,6 @@ public class GroupController {
      */
     @GetMapping("/api/short-link/admin/v1/group")
     public Result<List<ShortLinkGroupRespDTO>> listGroup() {
-
         return Results.success(groupService.listGroup());
     }
 
