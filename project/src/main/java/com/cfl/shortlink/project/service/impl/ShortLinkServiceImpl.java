@@ -2,15 +2,11 @@ package com.cfl.shortlink.project.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.date.Week;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -18,7 +14,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cfl.shortlink.project.common.constant.RedisKeyConstant;
-import com.cfl.shortlink.project.common.constant.ShortLinkConstant;
 import com.cfl.shortlink.project.common.convention.exception.ClientException;
 import com.cfl.shortlink.project.common.convention.exception.ServiceException;
 import com.cfl.shortlink.project.common.enums.ValidDateTypeEnum;
@@ -31,8 +26,7 @@ import com.cfl.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.cfl.shortlink.project.dto.resp.*;
-import com.cfl.shortlink.project.mq.producer.DelayShortLinkStatsProducer;
-import com.cfl.shortlink.project.mq.producer.ShortLinkStatsSaveProducer;
+import com.cfl.shortlink.project.mq.producer.LinkStatsSaveRocketMQProducer;
 import com.cfl.shortlink.project.service.LinkStatsTodayService;
 import com.cfl.shortlink.project.service.ShortLinkService;
 import com.cfl.shortlink.project.toolkit.HashUtil;
@@ -87,7 +81,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final LinkStatsTodayMapper linkStatsTodayMapper;
     private final LinkStatsTodayService linkStatsTodayService;
-    private final ShortLinkStatsSaveProducer shortLinkStatsSaveProducer;
+    private final LinkStatsSaveRocketMQProducer linkStatsSaveRocketMQProducer;
     private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
 
 
@@ -136,7 +130,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             // 1.在缓存中真实存在
             // 2.缓存中不存在 但是误判
             LambdaQueryWrapper queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
-                            .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
+                    .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
             ShortLinkDO hasShortLinkDO1 = baseMapper.selectOne(queryWrapper);
             if (hasShortLinkDO1 != null) {
                 log.warn("短链接: {} 重复入库", fullShortUrl);
@@ -151,7 +145,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         requestParam.getOriginUrl(),
                         LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()),
                         TimeUnit.MILLISECONDS
-                    );
+                );
 
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLinkCreateRespDTO.builder()
@@ -406,7 +400,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             return;
         }
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
-
         if (!contains)  {
             ((HttpServletResponse)response).sendRedirect("/page/notfound");
             return;
@@ -457,7 +450,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .set(
                             String.format(RedisKeyConstant.GOTO_SHORT_LINK_KEY, fullShortUrl),
                             shortLinkDO.getOriginUrl(),
-                            LinkUtil.getLinkCacheValidDate(shortLinkDO.getValidDate()), TimeUnit.MINUTES
+                            LinkUtil.getLinkCacheValidDate(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS
                     );
             ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, request, response);
             shortLinkStats(fullShortUrl, shortLinkDO.getGid(), statsRecord);
@@ -553,7 +546,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         producerMap.put("fullShortUrl", fullShortUrl);
         producerMap.put("gid", gid);
         producerMap.put("statsRecord", JSON.toJSONString(statsRecord));
-        shortLinkStatsSaveProducer.send(producerMap);
+        linkStatsSaveRocketMQProducer.send(producerMap);
     }
 
     private void verificationWhitelist(String originUrl) {

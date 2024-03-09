@@ -14,29 +14,31 @@ import com.cfl.shortlink.project.common.constant.ShortLinkConstant;
 import com.cfl.shortlink.project.dao.entity.*;
 import com.cfl.shortlink.project.dao.mapper.*;
 import com.cfl.shortlink.project.dto.bz.ShortLinkStatsRecordDTO;
-import com.cfl.shortlink.project.mq.producer.DelayShortLinkStatsProducer;
+import com.cfl.shortlink.project.mq.producer.LinkStatsSaveRocketMQProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.RecordId;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+
 /**
  * 短链接监控状态保存消息队列消费者
- * 公众号：马丁玩编程，回复：加群，添加马哥微信（备注：link）获取项目资料
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRecord<String, String, String>> {
+public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
 
     private final ShortLinkMapper shortLinkMapper;
     private final ShortLinkGotoMapper shortLinkGotoMapper;
@@ -49,32 +51,72 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final LinkStatsTodayMapper linkStatsTodayMapper;
-    private final DelayShortLinkStatsProducer delayShortLinkStatsProducer;
-    private final StringRedisTemplate stringRedisTemplate;
+    private final LinkStatsSaveRocketMQProducer linkStatsSaveRocketMQProducer;
 
     @Value("${short-link.status.locate.amap-key}")
-    private String statusLocateAmapKey;
+    private String statsLocateAmapKey;
+    @Value("${rocketmq.name-server}")
+    private String nameServer;
+    @Value("${rocketmq.consumer.group}")
+    private String consumerGroup;
+    @Value("${rocketmq.producer.topic}")
+    private String topic;
 
-    @Override
-    public void onMessage(MapRecord<String, String, String> message) {
-        String stream = message.getStream();
-        RecordId id = message.getId();
-        Map<String, String> producerMap = message.getValue();
-        String fullShortUrl = producerMap.get("fullShortUrl");
-        if (StrUtil.isNotBlank(fullShortUrl)) {
-            String gid = producerMap.get("gid");
-            ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
-            actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
+    public void onMessage() {
+        //1.创建消费者Consumer，制定消费者组名
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(consumerGroup);
+        //2.指定Nameserver地址
+        consumer.setNamesrvAddr(nameServer);
+        try {
+            //3.订阅主题Topic和Tag
+            consumer.subscribe(topic, "*");
+            //consumer.subscribe("base", "Tag1");
+
+            //消费所有"*",消费Tag1和Tag2  Tag1 || Tag2
+            //consumer.subscribe("base", "*");
+
+            //设定消费模式：负载均衡|广播模式  默认为负载均衡
+            //负载均衡10条消息，每个消费者共计消费10条
+            //广播模式10条消息，每个消费者都消费10条
+            //consumer.setMessageModel(MessageModel.BROADCASTING);
+
+            //4.设置回调函数，处理消息
+            consumer.registerMessageListener(new MessageListenerConcurrently() {
+                //接受消息内容
+                @Override
+                public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+                    for (MessageExt msg : msgs) {
+                        Map<String, String> producerMap = JSON.parseObject(msg.getBody(), Map.class);
+                        String fullShortUrl = producerMap.get("fullShortUrl");
+                        String gid = producerMap.get("gid");
+                        ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
+                        log.info("接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
+                        try {
+                            actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
+                        } catch (Throwable ex) {
+                            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                        }
+                    }
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                }
+            });
+            //5.启动消费者consumer
+            consumer.start();
+        } catch (Throwable ex) {
+            log.error("消息消费失败");
         }
-        stringRedisTemplate.opsForStream().delete(Objects.requireNonNull(stream), id.getValue());
     }
 
-    public void actualSaveShortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO statsRecord) {
+    private void actualSaveShortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO statsRecord) {
         fullShortUrl = Optional.ofNullable(fullShortUrl).orElse(statsRecord.getFullShortUrl());
         RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(String.format(RedisKeyConstant.LOCK_GID_UPDATE_KEY, fullShortUrl));
         RLock rLock = readWriteLock.readLock();
         if (!rLock.tryLock()) {
-            delayShortLinkStatsProducer.send(statsRecord);
+            Map<String, String> producerMap =new HashMap<>();
+            producerMap.put("fullShortUrl", fullShortUrl);
+            producerMap.put("gid", gid);
+            producerMap.put("statsRecord", JSON.toJSONString(statsRecord));
+            linkStatsSaveRocketMQProducer.send(producerMap);
             return;
         }
         try {
@@ -100,7 +142,7 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
                     .build();
             linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
             Map<String, Object> locateParamMap = new HashMap<>();
-            locateParamMap.put("key", statusLocateAmapKey);
+            locateParamMap.put("key", statsLocateAmapKey);
             locateParamMap.put("ip", statsRecord.getRemoteAddr());
             String locateResultStr = HttpUtil.get(ShortLinkConstant.AMAP_REMOTE_URL, locateParamMap);
             JSONObject locateResultObj = JSON.parseObject(locateResultStr);
@@ -183,5 +225,10 @@ public class ShortLinkStatsSaveConsumer implements StreamListener<String, MapRec
         } finally {
             rLock.unlock();
         }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        onMessage();
     }
 }

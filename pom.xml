@@ -32,6 +32,7 @@
         <jsoup.version>1.15.3</jsoup.version>
         <easyexcel.version>3.1.3</easyexcel.version>
         <spotless-maven-plugin.version>2.22.1</spotless-maven-plugin.version>
+        <rocketmq.version>5.2.0</rocketmq.version>
     </properties>
 
     <dependencies>
@@ -114,6 +115,13 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-client</artifactId>
+                <version>${rocketmq.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
