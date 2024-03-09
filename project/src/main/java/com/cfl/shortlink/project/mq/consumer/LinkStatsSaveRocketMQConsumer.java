@@ -14,8 +14,10 @@ import com.cfl.shortlink.project.common.constant.ShortLinkConstant;
 import com.cfl.shortlink.project.dao.entity.*;
 import com.cfl.shortlink.project.dao.mapper.*;
 import com.cfl.shortlink.project.dto.bz.ShortLinkStatsRecordDTO;
+import com.cfl.shortlink.project.mq.idempotent.MessageQueueIdempotentHandler;
 import com.cfl.shortlink.project.mq.producer.LinkStatsSaveRocketMQProducer;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.rmi.server.ServerCloneException;
 import java.util.*;
 
 
@@ -52,6 +55,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final LinkStatsTodayMapper linkStatsTodayMapper;
     private final LinkStatsSaveRocketMQProducer linkStatsSaveRocketMQProducer;
+    private final MessageQueueIdempotentHandler messageQueueIdempotentHandler;
 
     @Value("${short-link.status.locate.amap-key}")
     private String statsLocateAmapKey;
@@ -60,7 +64,8 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
     @Value("${rocketmq.consumer.group}")
     private String consumerGroup;
     @Value("${rocketmq.producer.topic}")
-    private String topic;
+    private String TOPIC;
+
 
     public void onMessage() {
         //1.创建消费者Consumer，制定消费者组名
@@ -69,7 +74,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
         consumer.setNamesrvAddr(nameServer);
         try {
             //3.订阅主题Topic和Tag
-            consumer.subscribe(topic, "*");
+            consumer.subscribe(TOPIC, "*");
             //consumer.subscribe("base", "Tag1");
 
             //消费所有"*",消费Tag1和Tag2  Tag1 || Tag2
@@ -83,19 +88,36 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
             //4.设置回调函数，处理消息
             consumer.registerMessageListener(new MessageListenerConcurrently() {
                 //接受消息内容
+                @SneakyThrows
                 @Override
                 public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
                     for (MessageExt msg : msgs) {
-                        Map<String, String> producerMap = JSON.parseObject(msg.getBody(), Map.class);
-                        String fullShortUrl = producerMap.get("fullShortUrl");
-                        String gid = producerMap.get("gid");
-                        ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
-                        log.info("接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
-                        try {
-                            actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
-                        } catch (Throwable ex) {
+                        String key = msg.getKeys();
+                        //判断是否被消费过
+                        if (!messageQueueIdempotentHandler.isMessageProcessed(key)) {
+                            // 判断当前的这个消息流程是否执行完成
+                            if (messageQueueIdempotentHandler.isAccomplish(key)) {
+                                throw new ServerCloneException("消息已经完成流程，不能重复消费");
+                            }
+                            // 消息未完成流程，需要消息队列重试
                             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                         }
+                        try {
+                            Map<String, String> producerMap = JSON.parseObject(msg.getBody(), Map.class);
+                            String fullShortUrl = producerMap.get("fullShortUrl");
+                            if (StrUtil.isNotBlank(fullShortUrl)) {
+                                String gid = producerMap.get("gid");
+                                ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
+                                log.info("接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
+                                actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
+                            }
+                        } catch (Throwable ex) {
+                            // 某某某情况宕机了
+                            messageQueueIdempotentHandler.delMessageProcessed(key);
+                            log.error("记录短链接监控消费异常", ex);
+                            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                        }
+                        messageQueueIdempotentHandler.setAccomplish(key);
                     }
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
@@ -196,6 +218,16 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
                         .network(statsRecord.getNetwork())
                         .build();
                 linkNetworkStatsMapper.shortLinkNetworkState(linkNetworkStatsDO);
+                shortLinkMapper.incrementStats(gid, fullShortUrl, 1, statsRecord.getUvFirstFlag() ? 1 : 0, statsRecord.getUipFirstFlag() ? 1 : 0);
+                LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
+                        .fullShortUrl(fullShortUrl)
+                        .gid(gid)
+                        .date(now)
+                        .todayPv(1)
+                        .todayUv(statsRecord.getUvFirstFlag() ? 1 : 0)
+                        .todayUip(statsRecord.getUipFirstFlag() ? 1 : 0)
+                        .build();
+                linkStatsTodayMapper.shortLinkTodayState(linkStatsTodayDO);
                 LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
                         .fullShortUrl(fullShortUrl)
                         .gid(gid)
@@ -208,16 +240,6 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
                         .user(statsRecord.getUv())
                         .build();
                 linkAccessLogsMapper.insert(linkAccessLogsDO);
-                shortLinkMapper.incrementStats(gid, fullShortUrl, 1, statsRecord.getUvFirstFlag() ? 1 : 0, statsRecord.getUipFirstFlag() ? 1 : 0);
-                LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
-                        .fullShortUrl(fullShortUrl)
-                        .gid(gid)
-                        .date(now)
-                        .todayPv(1)
-                        .todayUv(statsRecord.getUvFirstFlag() ? 1 : 0)
-                        .todayUip(statsRecord.getUipFirstFlag() ? 1 : 0)
-                        .build();
-                linkStatsTodayMapper.shortLinkTodayState(linkStatsTodayDO);
             }
 
         } catch (Throwable ex) {

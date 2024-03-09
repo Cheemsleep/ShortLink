@@ -27,7 +27,9 @@ public class LinkStatsSaveRocketMQProducer {
     @Value("${rocketmq.producer.group}")
     private String producerGroup;
     @Value("${rocketmq.producer.topic}")
-    private String topic;
+    private String TOPIC;
+    @Value("${rocketmq.producer.idempotent_key}")
+    private String IDEMPOTENT_KEY;
 
     public void send(Map<String, String> producerMap) {
         //1.创建消息生产者producer，并制定生产者组名
@@ -43,7 +45,9 @@ public class LinkStatsSaveRocketMQProducer {
              * 参数二：消息Tag 目前单一类型消息不需要tag
              * 参数三：消息内容
              */
-            Message msg = new Message(topic, null, JSON.toJSONBytes(producerMap));
+            Message msg = new Message(TOPIC, null, JSON.toJSONBytes(producerMap));
+            //设置Key进行消息幂等
+            msg.setKeys(IDEMPOTENT_KEY + producerMap.get("fullShortUrl"));
             //5.发送异步消息
             producer.send(msg, new SendCallback() {
                 /**

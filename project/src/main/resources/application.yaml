@@ -11,9 +11,6 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
-      channel-topic:
-
-
   mvc:
     view:
       prefix: /templates/
@@ -52,6 +49,8 @@ rocketmq:
     retryNextServer: false
     # topic
     topic: short_link_stats
+    # 幂等KEY
+    idempotent_key: short-link:idempotent_
 
 
 short-link:
