@@ -2,6 +2,7 @@ package com.cfl.shortlink.admin.common.biz.user;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
+import com.cfl.shortlink.admin.common.constant.RedisCacheConstant;
 import com.cfl.shortlink.admin.common.convention.exception.ClientException;
 import com.cfl.shortlink.admin.common.convention.result.Results;
 import com.cfl.shortlink.admin.common.enums.UserErrorCodeEnum;
@@ -48,7 +49,7 @@ public class UserTransmitFilter implements Filter {
             }
             Object userInfoJsonStr = null;
             try {
-                userInfoJsonStr = stringRedisTemplate.opsForHash().get("login_" + username, token);
+                userInfoJsonStr = stringRedisTemplate.opsForHash().get(RedisCacheConstant.USER_LOGIN_KEY + username, token);
 
                 if (userInfoJsonStr == null) {
                     throw new ClientException(UserErrorCodeEnum.USER_TOKEN_FAIL);
