@@ -88,6 +88,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @Value("${short-link.domain.default}")
     private String createShortLinkDefaultDomain;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         verificationWhitelist(requestParam.getOriginUrl());
@@ -126,17 +127,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             baseMapper.insert(shortLinkDO);
             shortLinkGotoMapper.insert(shortLinkGotoDO);
         } catch (DuplicateKeyException ex) {
-            // TODO 被误判的短链接如何处理
+            // 被误判的短链接如何处理
             // 1.在缓存中真实存在
             // 2.缓存中不存在 但是误判
-            LambdaQueryWrapper queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
-                    .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
-            ShortLinkDO hasShortLinkDO1 = baseMapper.selectOne(queryWrapper);
-            if (hasShortLinkDO1 != null) {
-                log.warn("短链接: {} 重复入库", fullShortUrl);
-                throw new ServiceException("短链接生成重复");
-            }
-
+            // solution： 数据库唯一索引
+            log.warn("短链接: {} 重复入库", fullShortUrl);
+            throw new ServiceException(String.format("短链接：%s 生成重复", fullShortUrl));
         }
         //缓存预热
         stringRedisTemplate.opsForValue()
@@ -514,7 +510,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 throw new ServiceException("短链接创建过于频繁, 请稍后再试");
             }
             String originUrl = requestParam.getOriginUrl();
-            originUrl += System.currentTimeMillis(); //降低hash碰撞的概率
+            originUrl += UUID.randomUUID().toString(); //降低hash碰撞的概率
             shortUri = HashUtil.hashToBase62(originUrl);
             if (!shortUriCreateCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain + "/" + shortUri)) {
                 break;
