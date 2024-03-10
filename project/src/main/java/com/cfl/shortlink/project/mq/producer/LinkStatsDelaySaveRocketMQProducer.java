@@ -31,7 +31,7 @@ public class LinkStatsDelaySaveRocketMQProducer {
     @Value("${rocketmq.producer.idempotent_key}")
     private String IDEMPOTENT_KEY;
     @Value("${rocketmq.producer.consume_delay}")
-    private String TAG;
+    private String TAG_DELAY;
 
     public void send(Map<String, String> producerMap) {
         //1.创建消息生产者producer，并制定生产者组名
@@ -47,7 +47,7 @@ public class LinkStatsDelaySaveRocketMQProducer {
              * 参数二：消息Tag 立即消费类型
              * 参数三：消息内容
              */
-            Message msg = new Message(TOPIC, TAG, JSON.toJSONBytes(producerMap));
+            Message msg = new Message(TOPIC, TAG_DELAY, JSON.toJSONBytes(producerMap));
             //设置Key进行消息幂等
             msg.setKeys(IDEMPOTENT_KEY + producerMap.get("fullShortUrl"));
             //5.发送异步消息

@@ -16,7 +16,6 @@ import com.cfl.shortlink.project.dao.mapper.*;
 import com.cfl.shortlink.project.dto.bz.ShortLinkStatsRecordDTO;
 import com.cfl.shortlink.project.mq.idempotent.MessageQueueIdempotentHandler;
 import com.cfl.shortlink.project.mq.producer.LinkStatsDelaySaveRocketMQProducer;
-import com.cfl.shortlink.project.mq.producer.LinkStatsSaveRocketMQProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -66,10 +65,8 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
     private String consumerGroup;
     @Value("${rocketmq.producer.topic}")
     private String TOPIC;
-    @Value("${rocketmq.producer.idempotent_key}")
-    private String IDEMPOTENT_KEY;
     @Value("${rocketmq.producer.consume_now}")
-    private String TAG;
+    private String TAG_NOW;
 
 
     public void onMessage() {
@@ -79,7 +76,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
         consumer.setNamesrvAddr(nameServer);
         try {
             //3.订阅主题Topic和Tag
-            consumer.subscribe(TOPIC, TAG);
+            consumer.subscribe(TOPIC, TAG_NOW);
             //consumer.subscribe("base", "Tag1");
 
             //消费所有"*",消费Tag1和Tag2  Tag1 || Tag2

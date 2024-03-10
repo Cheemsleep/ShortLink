@@ -1,22 +1,10 @@
 package com.cfl.shortlink.project.mq.consumer;
 
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.date.Week;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.cfl.shortlink.project.common.constant.RedisKeyConstant;
-import com.cfl.shortlink.project.common.constant.ShortLinkConstant;
-import com.cfl.shortlink.project.dao.entity.*;
-import com.cfl.shortlink.project.dao.mapper.*;
 import com.cfl.shortlink.project.dto.bz.ShortLinkStatsRecordDTO;
 import com.cfl.shortlink.project.mq.idempotent.MessageQueueIdempotentHandler;
-import com.cfl.shortlink.project.mq.producer.LinkStatsDelaySaveRocketMQProducer;
-import com.cfl.shortlink.project.mq.producer.LinkStatsSaveRocketMQProducer;
 import com.cfl.shortlink.project.service.ShortLinkService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,9 +14,6 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.redisson.api.RLock;
-import org.redisson.api.RReadWriteLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -48,8 +33,6 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
     private final ShortLinkService shortLinkService;
     private final MessageQueueIdempotentHandler messageQueueIdempotentHandler;
 
-    @Value("${short-link.status.locate.amap-key}")
-    private String statsLocateAmapKey;
     @Value("${rocketmq.name-server}")
     private String nameServer;
     @Value("${rocketmq.consumer.group}")
@@ -57,7 +40,7 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
     @Value("${rocketmq.producer.topic}")
     private String TOPIC;
     @Value("${rocketmq.producer.consume_delay}")
-    private String TAG;
+    private String TAG_DELAY;
 
 
     public void onMessage() {
@@ -67,7 +50,7 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
         consumer.setNamesrvAddr(nameServer);
         try {
             //3.订阅主题Topic和Tag
-            consumer.subscribe(TOPIC, TAG);
+            consumer.subscribe(TOPIC, TAG_DELAY);
             //consumer.subscribe("base", "Tag1");
 
             //消费所有"*",消费Tag1和Tag2  Tag1 || Tag2
@@ -102,6 +85,7 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
                                 String gid = producerMap.get("gid");
                                 ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
                                 log.info("接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
+                                //重新执行统计方法
                                 shortLinkService.shortLinkStats(fullShortUrl, gid, statsRecord);
                             }
                         } catch (Throwable ex) {
