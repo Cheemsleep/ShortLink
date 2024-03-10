@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 短链接监控状态保存消息队列立即生产者
+ * 短链接监控状态保存消息队列延迟生产者
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class LinkStatsSaveRocketMQProducer {
+public class LinkStatsDelaySaveRocketMQProducer {
 
     @Value("${rocketmq.name-server}")
     private String nameServer;
@@ -30,7 +30,7 @@ public class LinkStatsSaveRocketMQProducer {
     private String TOPIC;
     @Value("${rocketmq.producer.idempotent_key}")
     private String IDEMPOTENT_KEY;
-    @Value("${rocketmq.producer.consume_now}")
+    @Value("${rocketmq.producer.consume_delay}")
     private String TAG;
 
     public void send(Map<String, String> producerMap) {

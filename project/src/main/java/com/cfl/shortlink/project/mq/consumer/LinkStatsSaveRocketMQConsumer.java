@@ -15,6 +15,7 @@ import com.cfl.shortlink.project.dao.entity.*;
 import com.cfl.shortlink.project.dao.mapper.*;
 import com.cfl.shortlink.project.dto.bz.ShortLinkStatsRecordDTO;
 import com.cfl.shortlink.project.mq.idempotent.MessageQueueIdempotentHandler;
+import com.cfl.shortlink.project.mq.producer.LinkStatsDelaySaveRocketMQProducer;
 import com.cfl.shortlink.project.mq.producer.LinkStatsSaveRocketMQProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -36,7 +37,7 @@ import java.util.*;
 
 
 /**
- * 短链接监控状态保存消息队列消费者
+ * 短链接监控状态保存消息队列立即消费者
  */
 @Slf4j
 @Component
@@ -54,7 +55,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final LinkStatsTodayMapper linkStatsTodayMapper;
-    private final LinkStatsSaveRocketMQProducer linkStatsSaveRocketMQProducer;
+    private final LinkStatsDelaySaveRocketMQProducer delaySaveRocketMQProducer;
     private final MessageQueueIdempotentHandler messageQueueIdempotentHandler;
 
     @Value("${short-link.status.locate.amap-key}")
@@ -65,6 +66,10 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
     private String consumerGroup;
     @Value("${rocketmq.producer.topic}")
     private String TOPIC;
+    @Value("${rocketmq.producer.idempotent_key}")
+    private String IDEMPOTENT_KEY;
+    @Value("${rocketmq.producer.consume_now}")
+    private String TAG;
 
 
     public void onMessage() {
@@ -74,7 +79,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
         consumer.setNamesrvAddr(nameServer);
         try {
             //3.订阅主题Topic和Tag
-            consumer.subscribe(TOPIC, "*");
+            consumer.subscribe(TOPIC, TAG);
             //consumer.subscribe("base", "Tag1");
 
             //消费所有"*",消费Tag1和Tag2  Tag1 || Tag2
@@ -138,7 +143,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
             producerMap.put("fullShortUrl", fullShortUrl);
             producerMap.put("gid", gid);
             producerMap.put("statsRecord", JSON.toJSONString(statsRecord));
-            linkStatsSaveRocketMQProducer.send(producerMap);
+            delaySaveRocketMQProducer.send(producerMap);
             return;
         }
         try {

@@ -49,6 +49,9 @@ rocketmq:
     retryNextServer: false
     # topic
     topic: short_link_stats
+    # tag
+    consume_now: consume immediately
+    consume_delay: consume_delay
     # 幂等KEY
     idempotent_key: short-link:idempotent_
 
