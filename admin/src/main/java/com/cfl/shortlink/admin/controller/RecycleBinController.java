@@ -3,6 +3,7 @@ package com.cfl.shortlink.admin.controller;
 
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.remote.dto.req.RecycleBinRecoverReqDTO;
 import com.cfl.shortlink.admin.remote.dto.req.RecycleBinRemoveReqDTO;
@@ -37,7 +38,7 @@ public class RecycleBinController {
      * 分页查询回收站短链接
      */
     @GetMapping("/api/short-link/admin/v1/recycle-bin/page")
-    public Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+    public Result<Page<ShortLInkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         return recycleBinService.pageRecycleBinShortLink(requestParam);
     }
 

@@ -9,6 +9,8 @@ import com.cfl.shortlink.admin.common.convention.result.Result;
 import com.cfl.shortlink.admin.remote.dto.req.ShortLinkStatsReqDTO;
 import com.cfl.shortlink.admin.remote.dto.resp.*;
 import com.cfl.shortlink.admin.remote.dto.req.*;
+import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -48,7 +50,7 @@ public interface ShortLinkRemoteService {
      * @param requestParam
      * @return
      */
-    default Result<IPage<ShortLInkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    default Result<IPage<ShortLInkPageRespDTO>> pageShortLink(@SpringQueryMap ShortLinkPageReqDTO requestParam) {
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("gid", requestParam.getGid());
         requestMap.put("orderTag", requestParam.getOrderTag());

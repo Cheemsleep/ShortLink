@@ -2,7 +2,6 @@ package com.cfl.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -16,7 +15,7 @@ import com.cfl.shortlink.admin.dao.mapper.GroupMapper;
 import com.cfl.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.cfl.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.cfl.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
-import com.cfl.shortlink.admin.remote.ShortLinkRemoteService;
+import com.cfl.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.cfl.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.cfl.shortlink.admin.service.GroupService;
 import com.cfl.shortlink.admin.util.RandomGenerator;
@@ -38,7 +37,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
 
-    private final ShortLinkRemoteService shortLinkRemoteService;
+    private final ShortLinkActualRemoteService actualRemoteService;
     private final RedissonClient redissonClient;
 
     @Value("${short-link.group.default-max-num}")
@@ -88,7 +87,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
 
         List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
-        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkRemoteService
+        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = actualRemoteService
                 .listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList());
         List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOList =
                 BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
