@@ -15,6 +15,7 @@ import com.cfl.shortlink.project.dto.req.ShortLinkStatsAccessRecordReqDTO;
 import com.cfl.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import com.cfl.shortlink.project.dto.resp.*;
 import com.cfl.shortlink.project.service.ShortLinkStatsService;
+import com.cfl.shortlink.project.toolkit.DateFormatUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,11 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         List<LinkAccessStatsDO> listStatsByShortLink = linkAccessStatsMapper.listStatsByShortLink(requestParam);
         if (CollUtil.isEmpty(listStatsByShortLink)) {
             return null;
+        }
+        //日期格式处理
+        if (requestParam.getStartDate().length() > 19 || requestParam.getEndDate().length() > 19) {
+            requestParam.setStartDate(DateFormatUtil.parseDate(requestParam.getStartDate()));
+            requestParam.setEndDate(DateFormatUtil.parseDate(requestParam.getEndDate()));
         }
         // 基础访问数据
         LinkAccessStatsDO pvUvUidStatsByShortLink = linkAccessLogsMapper.findPvUvUidStatsByShortLink(requestParam);
@@ -238,11 +244,21 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         if (CollUtil.isEmpty(listStatsByGroup)) {
             return null;
         }
+        //日期格式处理
+        if (requestParam.getStartDate().length() > 19 || requestParam.getEndDate().length() > 19) {
+            requestParam.setStartDate(DateFormatUtil.parseDate(requestParam.getStartDate()));
+            requestParam.setEndDate(DateFormatUtil.parseDate(requestParam.getEndDate()));
+        }
         // 基础访问数据
         LinkAccessStatsDO pvUvUidStatsByGroup = linkAccessLogsMapper.findPvUvUidStatsByGroup(requestParam);
         // 基础访问详情
         List<ShortLinkStatsAccessDailyRespDTO> daily = new ArrayList<>();
-        List<String> rangeDates = DateUtil.rangeToList(DateUtil.parse(requestParam.getStartDate()), DateUtil.parse(requestParam.getEndDate()), DateField.DAY_OF_MONTH).stream()
+        List<String> rangeDates = DateUtil.rangeToList(
+                        DateUtil.parse(requestParam.getStartDate()),
+                        DateUtil.parse(requestParam.getEndDate()),
+                        DateField.DAY_OF_MONTH
+                )
+                .stream()
                 .map(DateUtil::formatDate)
                 .toList();
         rangeDates.forEach(each -> listStatsByGroup.stream()

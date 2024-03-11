@@ -1,5 +1,7 @@
 package com.cfl.shortlink.project.test;
 
+import com.cfl.shortlink.project.toolkit.DateFormatUtil;
+
 public class LinkTableShardingTest {
     public static final String SQL = "create table t_link_goto_%d\n" +
             "(\n" +

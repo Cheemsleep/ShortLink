@@ -39,7 +39,7 @@ public class ShortLinkStatsController {
     /**
      * 访问单个短链接指定时间内访问记录监控数据
      */
-    @GetMapping("/api/short-link/admin/v1/access-record")
+    @GetMapping("/api/short-link/admin/v1/stats/access-record")
     public Result<Page<ShortLinkStatsAccessRecordRespDTO>> shortLinkStats(ShortLinkStatsAccessRecordReqDTO requestParam) {
         return actualRemoteService.shortLinkStatsAccessRecord(requestParam);
     }
@@ -47,7 +47,7 @@ public class ShortLinkStatsController {
     /**
      * 访问分组下短链接指定时间内访问记录监控数据
      */
-    @GetMapping("/api/short-link/admin/v1/access-record/group")
+    @GetMapping("/api/short-link/admin/v1/stats/access-record/group")
     public Result<Page<ShortLinkGroupStatsAccessRecordRespDTO>> groupStats(ShortLinkGroupStatsAccessRecordReqDTO requestParam) {
         return actualRemoteService.shortLinkStatsAccessGroupRecord(requestParam);
     }
