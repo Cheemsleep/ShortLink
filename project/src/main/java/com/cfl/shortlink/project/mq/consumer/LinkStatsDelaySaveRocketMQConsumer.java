@@ -84,7 +84,7 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
                             if (StrUtil.isNotBlank(fullShortUrl)) {
                                 String gid = producerMap.get("gid");
                                 ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
-                                log.info("接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
+                                log.info("延迟消费者接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
                                 //重新执行统计方法
                                 shortLinkService.shortLinkStats(fullShortUrl, gid, statsRecord);
                             }

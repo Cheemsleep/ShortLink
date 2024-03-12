@@ -57,7 +57,7 @@ public class LinkStatsDelaySaveRocketMQProducer {
                  * @param sendResult
                  */
                 public void onSuccess(SendResult sendResult) {
-                    log.info("发送结果: {}", sendResult);
+                    log.info("延迟生产者消息发送结果: {}", sendResult);
                 }
 
                 /**
