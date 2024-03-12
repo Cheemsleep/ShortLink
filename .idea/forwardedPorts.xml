@@ -16,17 +16,9 @@
           <option name="readOnly" value="false" />
         </ForwardedPortInfo>
       </entry>
-      <entry key="8001">
+      <entry key="8003">
         <ForwardedPortInfo>
-          <option name="hostPort" value="8001" />
-          <option name="portName" value="project" />
-          <option name="readOnly" value="false" />
-        </ForwardedPortInfo>
-      </entry>
-      <entry key="8002">
-        <ForwardedPortInfo>
-          <option name="hostPort" value="8002" />
-          <option name="portName" value="admin" />
+          <option name="hostPort" value="8003" />
           <option name="readOnly" value="false" />
         </ForwardedPortInfo>
       </entry>

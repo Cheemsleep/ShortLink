@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * 后管系统远程调用controller层
  */
-@RestController
+@RestController(value = "shortLinkControllerByAdmin")
 @RequiredArgsConstructor
 public class ShortLinkController {
 
