@@ -24,9 +24,12 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.remoting.protocol.heartbeat.MessageModel;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -71,11 +74,11 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
 
 
     public void onMessage() {
-        //1.创建消费者Consumer，制定消费者组名
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(consumerGroup);
-        //2.指定Nameserver地址
-        consumer.setNamesrvAddr(nameServer);
         try {
+            //1.创建消费者Consumer，制定消费者组名
+            DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(consumerGroup);
+            //2.指定Nameserver地址
+            consumer.setNamesrvAddr(nameServer);
             //3.订阅主题Topic和Tag
             consumer.subscribe(TOPIC, TAG_NOW);
             //consumer.subscribe("base", "Tag1");
@@ -86,9 +89,9 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
             //设定消费模式：负载均衡|广播模式  默认为负载均衡
             //负载均衡10条消息，每个消费者共计消费10条
             //广播模式10条消息，每个消费者都消费10条
-            //consumer.setMessageModel(MessageModel.BROADCASTING);
+            consumer.setMessageModel(MessageModel.BROADCASTING);
 
-            //4.设置回调函数，处理消息
+            //5.设置回调函数，处理消息
             consumer.registerMessageListener(new MessageListenerConcurrently() {
                 //接受消息内容
                 @SneakyThrows
@@ -113,6 +116,7 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
                                 ShortLinkStatsRecordDTO statsRecord = JSON.parseObject(producerMap.get("statsRecord"), ShortLinkStatsRecordDTO.class);
                                 log.info("接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
                                 actualSaveShortLinkStats(fullShortUrl, gid, statsRecord);
+                                messageQueueIdempotentHandler.setAccomplish(key);
                             }
                         } catch (Throwable ex) {
                             // 某某某情况宕机了
@@ -120,12 +124,11 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
                             log.error("记录短链接监控消费异常", ex);
                             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                         }
-                        messageQueueIdempotentHandler.setAccomplish(key);
                     }
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
             });
-            //5.启动消费者consumer
+            //4.启动消费者consumer
             consumer.start();
         } catch (Throwable ex) {
             log.error("消息消费失败");
@@ -257,4 +260,5 @@ public class LinkStatsSaveRocketMQConsumer implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         onMessage();
     }
+
 }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -49,7 +50,7 @@ public class LinkStatsDelaySaveRocketMQProducer {
              */
             Message msg = new Message(TOPIC, TAG_DELAY, JSON.toJSONBytes(producerMap));
             //设置Key进行消息幂等
-            msg.setKeys(IDEMPOTENT_KEY + producerMap.get("fullShortUrl"));
+            msg.setKeys(IDEMPOTENT_KEY + producerMap.get("fullShortUrl") + UUID.randomUUID());
             //5.发送异步消息
             producer.send(msg, new SendCallback() {
                 /**

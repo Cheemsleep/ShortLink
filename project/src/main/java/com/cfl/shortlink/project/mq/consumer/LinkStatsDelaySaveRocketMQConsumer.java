@@ -87,6 +87,7 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
                                 log.info("延迟消费者接收到消息 {}, {}, {}", fullShortUrl, gid, statsRecord.toString());
                                 //重新执行统计方法
                                 shortLinkService.shortLinkStats(fullShortUrl, gid, statsRecord);
+                                messageQueueIdempotentHandler.setAccomplish(key);
                             }
                         } catch (Throwable ex) {
                             // 某某某情况宕机了
@@ -94,7 +95,6 @@ public class LinkStatsDelaySaveRocketMQConsumer implements InitializingBean {
                             log.error("记录短链接监控消费异常", ex);
                             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
                         }
-                        messageQueueIdempotentHandler.setAccomplish(key);
                     }
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
